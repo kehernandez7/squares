@@ -1,0 +1,91 @@
+/* grid.css - plain CSS, no Tailwind needed */
+
+.custom-grid {
+  display: grid;
+  gap: 8px;
+  align-items: start;
+  width: 100%;
+  box-sizing: border-box;
+  /* max width so cells don't grow huge on wide screens */
+  max-width: 1000px;
+  background: transparent;
+}
+
+/* corner (top-left) */
+.grid-corner {
+  padding: 6px;
+}
+
+/* labels (top row and left column) */
+.grid-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  padding: 6px;
+  color: #333;
+  user-select: none;
+}
+
+/* row label alignment */
+.row-label {
+  justify-content: flex-start;
+  padding-left: 8px;
+}
+
+/* cells */
+.grid-cell {
+  box-sizing: border-box;
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  /* keep them squares */
+  aspect-ratio: 1 / 1;
+  transition: transform 120ms ease, box-shadow 150ms ease, background 120ms ease;
+  user-select: none;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* clickable vs locked */
+.grid-cell.clickable {
+  cursor: pointer;
+}
+.grid-cell.clickable:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+}
+
+.grid-cell.filled {
+  background: #efefef;
+  color: #333;
+  cursor: not-allowed;
+  font-weight: 700;
+}
+
+/* selected state */
+.grid-cell.selected {
+  background: #1668d6; /* blue */
+  color: white;
+  box-shadow: 0 8px 22px rgba(22,104,214,0.22);
+  transform: scale(0.98);
+}
+
+/* cell text style */
+.cell-text {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* responsive: if the container is small, labels can wrap */
+@media (max-width: 480px) {
+  .grid-label {
+    font-size: 12px;
+    padding: 4px;
+  }
+  .cell-text { font-size: 13px; }
+}
