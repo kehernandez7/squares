@@ -13,7 +13,7 @@ export const GET: APIRoute = async ({ params }) => {
   // 1. Fetch game
   const { data: game, error: gameError } = await supabase
     .from("game")
-    .select("*")
+    .select("*, nfl_squares_teams(row_team_id, column_team_id)")
     .eq("game_uuid", id)
     .single();
 
@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ params }) => {
     return new Response(JSON.stringify({ error: gameError?.message || "Game not found" }), {
       status: 404,
     });
-  }``
+  }
 
   // 2. Fetch selections
   const { data: selections, error: selectionError } = await supabase
@@ -32,7 +32,98 @@ export const GET: APIRoute = async ({ params }) => {
   if (selectionError) {
     return new Response(JSON.stringify({ error: selectionError.message }), { status: 500 });
   }
-  return new Response(JSON.stringify({ game, selections }), { status: 200 });
+
+  // 3. Fetch NFL game name from ESPN API
+  let nflGameName: string | null = null;
+  if (game.nfl_game_id) {
+    try {
+      const res = await fetch(
+        `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${game.nfl_game_id}?lang=en&region=us`
+      );
+      if (res.ok) {
+        const json = await res.json();
+        nflGameName = json?.name ?? null;
+      }
+    } catch (err) {
+      console.error("Error fetching NFL game name:", err);
+    }
+  }
+
+  // 3. Fetch NFL game name from ESPN API
+  let gameStatus: string | null = null;
+  if (game.nfl_game_id) {
+    try {
+      const res = await fetch(
+        `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${game.nfl_game_id}/competitions/${game.nfl_game_id}/status?lang=en&region=us`
+      );
+      if (res.ok) {
+        const json = await res.json();
+        gameStatus = json?.type?.name ?? null;
+      }
+    } catch (err) {
+      console.error("Error fetching NFL game name:", err);
+    }
+  }
+
+//todo: ideally fetch these from DB to Prevent numerous calls to api
+  // Safely grab first record from the array
+  const teamRecord = game.nfl_squares_teams?.[0];
+
+  let team1: string | null = null;
+  let team2: string | null = null;
+
+  if (teamRecord) {
+    const fetchTeamName = async (teamId: number | null | undefined) => {
+      if (!teamId) return null;
+      try {
+        const res = await fetch(
+          `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2025/teams/${teamId}?lang=en&region=us`
+        );
+        if (!res.ok) {
+          console.error(`ESPN API error for team ${teamId}:`, res.status);
+          return null;
+        }
+        const json = await res.json();
+        return json?.shortDisplayName ?? null;
+      } catch (err) {
+        console.error(`Error fetching NFL team ${teamId}:`, err);
+        return null;
+      }
+    };
+
+    [team1, team2] = await Promise.all([
+      fetchTeamName(teamRecord.row_team_id),
+      fetchTeamName(teamRecord.column_team_id),
+    ]);
+  }
+
+  let winners: { row: number; col: number; quarters: number[] }[] = [];
+
+  if (gameStatus == "STATUS_FINAL" && !game.complete) {
+    const result = await calculateWinner(
+      game.nfl_game_id,
+      teamRecord.row_team_id,
+      teamRecord.column_team_id,
+      game.id
+    );
+    if (result) {
+      winners = result.winners;
+    }
+  }
+
+  return new Response(
+    JSON.stringify({
+      game: {
+        ...game,
+        nfl_game: nflGameName,
+        team_1: team1,
+        team_2: team2
+      },
+      selections,
+      winners
+    }),
+    { status: 200 }
+  );
 };
 
 export const POST: APIRoute = async ({ request, params }) => {
@@ -130,3 +221,89 @@ export const POST: APIRoute = async ({ request, params }) => {
 
   return new Response(JSON.stringify({ success: true, name: user.name }), { status: 201 });
 };
+
+async function calculateWinner(
+  nfl_game_id: number,
+  team_1: number,
+  team_2: number,
+  gameId: number
+) {
+  console.log("calculating winners (per quarter)");
+
+  if (!nfl_game_id) return null;
+
+  // 1. Fetch the row/col number assignments
+  const { data: numbers, error: numbersError } = await supabase
+    .from("nfl_squares_numbers")
+    .select("axis, position, value")
+    .eq("game_id", gameId);
+
+  if (numbersError || !numbers || numbers.length === 0) {
+    console.error("No numbers found for this game.");
+    return null;
+  }
+
+  const rowNumbers = numbers
+    .filter((n) => n.axis === "row")
+    .sort((a, b) => a.position - b.position)
+    .map((n) => n.value);
+
+  const colNumbers = numbers
+    .filter((n) => n.axis === "col")
+    .sort((a, b) => a.position - b.position)
+    .map((n) => n.value);
+
+  // 2. Fetch scores
+  const fetchTeamScores = async (teamId: number) => {
+    try {
+      const res = await fetch(
+        `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events/${nfl_game_id}/competitions/${nfl_game_id}/competitors/${teamId}/linescores?lang=en&region=us`
+      );
+      if (!res.ok) return [0, 0, 0, 0];
+
+      const json = await res.json();
+      const items = json?.items ?? [];
+
+      let cumulative = 0;
+      const scores = items.map((q: any) => (cumulative += q.value ?? 0));
+      while (scores.length < 4) scores.push(cumulative);
+      return scores;
+    } catch (err) {
+      console.error(`Error fetching scores for team ${teamId}:`, err);
+      return [0, 0, 0, 0];
+    }
+  };
+
+  const [team1Scores, team2Scores] = await Promise.all([
+    fetchTeamScores(team_1),
+    fetchTeamScores(team_2),
+  ]);
+
+  // 3. Winners per quarter
+  const winners: Record<
+    string,
+    { row: number; col: number; quarters: number[] }
+  > = {};
+
+  for (let q = 0; q < 4; q++) {
+    const team1LastDigit = team1Scores[q] % 10;
+    const team2LastDigit = team2Scores[q] % 10;
+
+    const row = rowNumbers.indexOf(team1LastDigit);
+    const col = colNumbers.indexOf(team2LastDigit);
+    if (row === -1 || col === -1) continue;
+
+    const key = `${row}-${col}`;
+    if (!winners[key]) {
+      winners[key] = { row, col, quarters: [q + 1] }; // store Q1–Q4
+    } else {
+      winners[key].quarters.push(q + 1);
+    }
+  }
+
+  return {
+    winners: Object.values(winners),
+    team1Scores,
+    team2Scores,
+  };
+}

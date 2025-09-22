@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import GameSetup from "../../components/GameSetup.tsx";
 ---
 
 <Layout title="NFL Squares">
@@ -7,8 +8,7 @@ import Layout from "../../layouts/Layout.astro";
     class="flex flex-col items-center justify-center min-h-screen text-center px-4"
   >
     <h1 class="text-4xl font-bold mb-4">Welcome to NFL Squares</h1>
-    <p class="text-lg max-w-2xl">
-      Create a new NFL Squares game to play with friends.
-    </p>
+
+    <GameSetup client:load />
   </section>
 </Layout>

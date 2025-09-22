@@ -36,14 +36,14 @@
 /* cells */
 .grid-cell {
   box-sizing: border-box;
-  border: 1px solid #cfcfcf;
-  background: #fff;
+  border: 1px solid #444; /* darker border */
+  background: #1b263b;    /* dark navy */
+  color: #e0e0e0;
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 48px;
   min-height: 48px;
-  /* keep them squares */
   aspect-ratio: 1 / 1;
   transition: transform 120ms ease, box-shadow 150ms ease, background 120ms ease;
   user-select: none;
@@ -51,28 +51,31 @@
   overflow: hidden;
 }
 
+/* clickable hover */
+.grid-cell.clickable:hover {
+  background: #2e3b55; /* slightly lighter on hover */
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.5);
+}
+
+/* filled */
+.grid-cell.filled {
+  background: #3a506b;
+  color: #ddd;
+  cursor: not-allowed;
+}
+
+/* selected */
+.grid-cell.selected {
+  background: #4e8cff; 
+  color: white;
+  box-shadow: 0 8px 22px rgba(78,140,255,0.5);
+  transform: scale(0.98);
+}
+
 /* clickable vs locked */
 .grid-cell.clickable {
   cursor: pointer;
-}
-.grid-cell.clickable:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
-}
-
-.grid-cell.filled {
-  background: #efefef;
-  color: #333;
-  cursor: not-allowed;
-  font-weight: 700;
-}
-
-/* selected state */
-.grid-cell.selected {
-  background: #1668d6; /* blue */
-  color: white;
-  box-shadow: 0 8px 22px rgba(22,104,214,0.22);
-  transform: scale(0.98);
 }
 
 /* cell text style */
@@ -105,13 +108,6 @@
   color: #333;
 }
 
-.user-form input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
 .user-form button {
   margin-top: 8px;
   padding: 10px;
@@ -128,41 +124,226 @@
   background: #0d4ba8;
 }
 
-/* Modal overlay */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+/* Modal box */
+.grid-cell.winner .cell-text {
+  white-space: pre-line; /* allow line breaks */
+  text-align: center;
+}
+
+.grid-cell.winner {
+  background: #2ecc71 !important; /* bright green */
+  color: white;
+  font-weight: 800;
+  border: 2px solid #27ae60;
+}
+
+.user-form input{
+  background: #1b263b;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+.modal {
+  background: #162447; /* dark indigo */
+  color: #e0e0e0;
+}
+
+.modal-actions button {
+  background: #4e8cff;
+  color: white;
+}
+
+h1, h2, h3, .grid-label {
+  color: #f0f0f0; /* bright white */
+  text-align: center;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  border: 6px solid rgba(255, 255, 255, 0.2);
+  border-top: 6px solid #4e8cff; /* blue highlight */
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-container {
+  position: fixed;   /* stays centered in viewport */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(13, 27, 42, 0.7); /* optional overlay */
+  z-index: 1000;
 }
 
-/* Modal box */
+.fade-in {
+  opacity: 0;
+  transform: scale(0.98);
+  animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+}
+
+/* Modal container */
 .modal {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;   /* rounded edges */
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  background: #1e2a3a;
+  color: #e0e0e0;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+  width: 90%;
+  max-width: 400px; /* nice on desktop */
 }
 
+/* Title */
+.modal h2 {
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+  color: #f5f5f5;
+}
+
+/* Form inside modal */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
 .modal-form label {
-  display: block;
-  margin-bottom: 1rem;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #ccc;
 }
 
 .modal-form input {
-  display: block;
-  width: 100%;
-  margin-top: 0.25rem;
-  padding: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #2a3b52;
+  color: #e0e0e0;
+  font-size: 1rem;
+  transition: all 0.2s ease;
 }
 
+.modal-form input:focus {
+  border-color: #4e8cff;
+  box-shadow: 0 0 0 3px rgba(78, 140, 255, 0.3);
+  outline: none;
+}
+
+/* Actions row */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
+  margin-top: 1rem;
 }
 
+.modal-actions button {
+  flex: 1;
+}
 
+/* Subtle fade-in animation */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+body.modal-open {
+  overflow: hidden;
+  height: 100vh;
+  touch-action: none;
+}
+
+body.modal-open .modal-overlay,
+body.modal-open .modal-overlay * {
+  pointer-events: auto;   /* re-enable clicks inside the modal only */
+}
+
+.page-title {
+  text-align: center;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.team-label {
+  font-size: 1.3rem; /* adjust to taste */
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.row-label.team-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.form-actions button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: #4e8cff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.form-actions button:hover {
+  background: #2f6ed9;
+}
+
+.grid-wrapper {
+  width: 100%;
+  overflow-x: auto; /* allow horizontal scroll on small screens */
+  margin: 0 auto;
+}

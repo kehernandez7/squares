@@ -1,0 +1,134 @@
+body {
+  background-color: #0d1b2a; /* dark blue */
+  color: #e0e0e0; /* light gray for readability */
+  font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+button {
+  background: linear-gradient(135deg, #4e8cff, #2563eb); /* blue gradient */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8); /* darker gradient */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+button:disabled {
+  background: #444;
+  color: #aaa;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+button:focus-visible {
+  outline: 2px solid #93c5fd; /* light blue focus ring */
+  outline-offset: 3px;
+}
+
+select {
+  appearance: none; /* remove default browser arrow */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background: #1b263b;       /* dark navy background */
+  color: #e0e0e0;            /* light text */
+  border: 1px solid #444;    /* subtle border */
+  border-radius: 8px;        /* rounded corners */
+  padding: 0.7rem 2.5rem 0.7rem 1rem; /* bigger touch target */
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 220px;          /* prevent being too narrow */
+}
+
+/* Hover state */
+select:hover:not(:disabled) {
+  border-color: #4e8cff; 
+  background: #22344d;
+}
+
+/* Focus (keyboard users) */
+select:focus {
+  outline: none;
+  border-color: #4e8cff;
+  box-shadow: 0 0 0 3px rgba(78, 140, 255, 0.4);
+}
+
+/* Disabled state */
+select:disabled {
+  background: #2b2b2b;
+  color: #888;
+  cursor: not-allowed;
+}
+
+/* Add a custom arrow using a background image */
+select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,<svg width='24' height='24' xmlns='http://www.w3.org/2000/svg' fill='%23e0e0e0'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 1.2rem;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  background: #1b263b;       /* dark navy */
+  color: #e0e0e0;            /* light text */
+  border: 1px solid #444;    /* subtle border */
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  width: 100%;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+/* Hover */
+input:hover,
+textarea:hover {
+  border-color: #4e8cff;
+  background: #22344d;
+}
+
+/* Focus */
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #4e8cff;
+  box-shadow: 0 0 0 3px rgba(78, 140, 255, 0.4);
+}
+
+/* Disabled */
+input:disabled,
+textarea:disabled {
+  background: #2b2b2b;
+  color: #888;
+  border-color: #333;
+  cursor: not-allowed;
+}
+
+label {
+  font-weight: 600;
+  color: #f0f0f0; /* brighter for readability */
+  display: block;
+  margin-bottom: 0.5rem;
+}

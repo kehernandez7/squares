@@ -18,6 +18,9 @@ interface Game {
   name: string;
   rows?: number;
   cols?: number;
+  nfl_game: string;
+  team_1: string;
+  team_2: string;
 }
 
 export default function Grid({ gameId }: { gameId: string }) {
@@ -26,6 +29,9 @@ export default function Grid({ gameId }: { gameId: string }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [numbers, setNumbers] = useState<{ row: number[]; col: number[] } | null>(null);
+  const [winners, setWinners] = useState<{ row: number; col: number; quarters: number[] }[]>([]);
+
 
   // Form state
   const [name, setName] = useState("");
@@ -34,6 +40,11 @@ export default function Grid({ gameId }: { gameId: string }) {
   // Fetch game + selections from API
   useEffect(() => {
     if (!gameId) return;
+    if (showModal) {
+      document.body.classList.add("modal-open");
+    } else {
+      document.body.classList.remove("modal-open");
+    }
 
     const fetchData = async () => {
       setLoading(true);
@@ -52,13 +63,27 @@ export default function Grid({ gameId }: { gameId: string }) {
             filledMap[`${s.row}-${s.col}`] = s.users.name;
           });
           setFilled(filledMap);
+          setWinners(json.winners || []);
         }
       } catch (err) {
         console.error("Fetch error:", err);
         setGame(null);
       }
       setLoading(false);
+      fetchNumbers();
     };
+
+    const fetchNumbers = async () => {
+      try {
+        const res = await fetch(`/api/nflsquares/${gameId}/numbers`);
+        const json = await res.json();
+        if (json.rows) {
+          setNumbers(json.rows);
+        }
+      } catch (err) {
+        console.error("Error fetching numbers:", err);
+      }
+  };
 
     fetchData();
   }, [gameId]);
@@ -119,84 +144,160 @@ export default function Grid({ gameId }: { gameId: string }) {
     }
   };
 
-  if (loading) return <div>Loading grid...</div>;
+  if (loading) {
+    return (
+      <div className="spinner-container">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
   if (!game) return <div>Game not found.</div>;
 
   const rows = game.rows || GRID_SIZE;
   const cols = game.cols || GRID_SIZE;
 
+  const allFilled = Object.keys(filled).length >= rows * cols;
+
+  const handleGenerateNumbers = async () => {
+    try {
+      const res = await fetch(`/api/nflsquares/${gameId}/numbers`, {
+        method: "POST",
+      });
+      const json = await res.json();
+      if (json.rows) {
+        setNumbers(json.rows);
+        alert("Numbers generated!");
+      } else if (json.message) {
+        alert(json.message);
+      }
+    } catch (err) {
+      console.error("Error generating numbers:", err);
+      alert("Failed to generate numbers");
+    }
+  };
+
   return (
-    <div>
-      <h2>{game.name}</h2>
+    <div className="fade-in">
+      <h2 className="page-title">
+        {game.name && `${game.name} - `}{game.nfl_game}
+      </h2>
+      <div className="grid-wrapper">
+        {/* GRID */}
+        <div
+          className="custom-grid"
+          style={{
+            gridTemplateColumns: `auto auto repeat(${cols}, minmax(48px, 1fr))`,
+            gridTemplateRows: `auto auto repeat(${rows}, minmax(48px, 1fr))`,
+          }}
+        >
+          {/* top-left corner */}
+          <div className="grid-corner" />
 
-      {/* GRID */}
-      <div
-        className="custom-grid"
-        style={{
-          gridTemplateColumns: `auto repeat(${cols}, minmax(48px, 1fr))`,
-          gridTemplateRows: `auto repeat(${rows}, minmax(48px, 1fr))`,
-        }}
-      >
-        {/* top-left corner */}
-        <div className="grid-corner" />
-
-        {/* column labels */}
-        {Array.from({ length: cols }).map((_, col) => (
-          <div key={`col-${col}`} className="grid-label column-label">
-            Col {col + 1}
+          {/* team_2 name spanning all cols */}
+          <div
+            className="grid-label column-label team-label"
+            style={{ gridColumn: `3 / span ${cols}`, gridRow: "1" }}
+          >
+            {game.team_2}
           </div>
-        ))}
 
-        {/* rows */}
-        {Array.from({ length: rows }).flatMap((_, row) => {
-          const rowElements = [];
-          // row label
-          rowElements.push(
-            <div key={`row-label-${row}`} className="grid-label row-label">
-              Row {row + 1}
+          {/* numbers row for team_2 */}
+          <div className="grid-corner" /> {/* spacer under corner */}
+          <div
+            className="grid-label column-label"
+            style={{ gridRow: "2", gridColumn: "2" }}
+          >
+            #
+          </div>
+          {Array.from({ length: cols }).map((_, col) => (
+            <div
+              key={`col-${col}`}
+              className="grid-label column-label"
+              style={{ gridRow: "2", gridColumn: col + 3 }}
+            >
+              {numbers ? numbers.col[col] : ""}
             </div>
-          );
+          ))}
 
-          // cells
-          for (let col = 0; col < cols; col++) {
-            const k = keyFor(row, col);
-            const isFilled = Boolean(filled[k]);
-            const isSelected = selected.has(k);
+          {/* team_1 name spanning all rows */}
+          <div
+            className="grid-label row-label team-label"
+            style={{ gridRow: `3 / span ${rows}`, gridColumn: "1" }}
+          >
+            {game.team_1}
+          </div>
 
-            rowElements.push(
+          {/* numbers col for team_1 */}
+          {Array.from({ length: rows }).map((_, row) => (
+            <div
+              key={`row-${row}-num`}
+              className="grid-label row-label"
+              style={{ gridRow: row + 3, gridColumn: "2" }}
+            >
+              {numbers ? numbers.row[row] : ""}
+            </div>
+          ))}
+
+          {/* grid cells */}
+          {Array.from({ length: rows }).flatMap((_, row) =>
+            Array.from({ length: cols }).map((_, col) => {
+              const k = keyFor(row, col);
+              const isFilled = Boolean(filled[k]);
+              const isSelected = selected.has(k);
+              const winner = winners.find((w) => w.row === row && w.col === col);
+
+              return (
               <div
                 key={k}
-                role={isFilled ? undefined : "button"}
-                tabIndex={isFilled ? -1 : 0}
-                aria-pressed={isSelected}
-                aria-disabled={isFilled}
                 className={[
                   "grid-cell",
                   isFilled ? "filled" : "clickable",
                   isSelected ? "selected" : "",
+                  winner ? "winner" : "",
                 ].join(" ")}
+                style={{ gridRow: row + 3, gridColumn: col + 3 }}
                 onClick={() => toggleSelect(k)}
                 onKeyDown={(e) => handleKey(e, k)}
               >
-                {isFilled ? (
+                {winner ? (
+                  <span className="cell-text">
+                    {filled[k] || ""}
+                    <br />
+                    🏆Q{winner.quarters.join(",")}
+                  </span>
+                ) : isFilled ? (
                   <span className="cell-text">{filled[k]}</span>
                 ) : isSelected ? (
                   <span className="cell-text">✓</span>
                 ) : null}
               </div>
-            );
-          }
-
-          return rowElements;
-        })}
+              );
+            })
+          )}
+        </div>
       </div>
 
+
       {/* Submit Button */}
-      <div className="form-actions">
-        <button type="button" onClick={() => setShowModal(true)}>
+      {!allFilled && <div className="form-actions">
+        <button type="button" disabled={allFilled} onClick={() => setShowModal(true)}>
           Submit
         </button>
       </div>
+      }
+      {/* Generate Numbers Button */}
+      {!numbers && (
+        <div className="form-actions">
+          <button
+            type="button"
+            onClick={handleGenerateNumbers}
+            disabled={!allFilled}
+          >
+            Generate Numbers
+          </button>
+        </div>
+      )}
 
       {/* Modal */}
       {showModal && (

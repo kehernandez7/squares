@@ -1,0 +1,87 @@
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.game-setup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.title {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #f0f0f0;
+}
+
+.game-setup-form {
+  background: #162447;       /* dark indigo box */
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 400px;          /* 👈 keeps it compact */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Make select and input match the compact box */
+.game-setup-form select,
+.game-setup-form input {
+  width: 100%;
+  font-size: 0.95rem;
+}
+
+/* Button inherits global style, but tweak size */
+.game-setup-form button {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+}
+
+h1, h2, h3, .grid-label {
+  color: #f0f0f0; /* bright white */
+  text-align: center;
+}
+
+/* Parent animation */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered children */
+.fade-stagger > * {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+.fade-stagger > *:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.fade-stagger > *:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.fade-stagger > *:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.fade-stagger > *:nth-child(4) {
+  animation-delay: 0.4s;
+}
