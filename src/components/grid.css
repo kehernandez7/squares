@@ -9,6 +9,8 @@
   /* max width so cells don't grow huge on wide screens */
   max-width: 1000px;
   background: transparent;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* corner (top-left) */
@@ -42,8 +44,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
-  min-height: 48px;
+  min-width: 36px;
+  min-height: 36px;
   aspect-ratio: 1 / 1;
   transition: transform 120ms ease, box-shadow 150ms ease, background 120ms ease;
   user-select: none;
@@ -80,7 +82,7 @@
 
 /* cell text style */
 .cell-text {
-  font-weight: 700;
+  font-weight: 300;
   font-size: 14px;
 }
 
@@ -368,9 +370,17 @@ body.modal-open .modal-overlay * {
 
 .grid-wrapper {
   width: 100%;
-  overflow-x: auto; /* allow horizontal scroll on small screens */
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
   margin: 0 auto;
+  -ms-overflow-style: none;  /* IE/Edge */
+  scrollbar-width: none;     /* Firefox */
 }
+.grid-wrapper::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
 
 .not-found {
   display: flex;
