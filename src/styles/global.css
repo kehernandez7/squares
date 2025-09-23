@@ -1,9 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
   background-color: #0d1b2a; /* dark blue */
   color: #e0e0e0; /* light gray for readability */
   font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
+  padding-top: 4.5rem; /* match navbar height */
 }
 button {
   background: linear-gradient(135deg, #4e8cff, #2563eb); /* blue gradient */
@@ -131,4 +136,46 @@ label {
   color: #f0f0f0; /* brighter for readability */
   display: block;
   margin-bottom: 0.5rem;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.7s ease-out forwards;
+}
+
+.animate-fade-in-delay {
+  animation: fade-in 0.7s ease-out forwards;
+  animation-delay: 0.5s;
+  opacity: 0;
+}
+
+.game-button {
+  width: 220px;
+  height: 220px;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column; /* icon on top, text below */
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #4e8cff, #2563eb);
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 700;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.game-button svg {
+  flex-shrink: 0;
+}
+
+.game-button:disabled {
+  background: #444;
+  color: #aaa;
+  cursor: not-allowed;
 }

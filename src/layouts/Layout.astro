@@ -4,6 +4,7 @@ interface Props {
 }
 
 const { title } = Astro.props;
+import NavBar from "../components/NavBar.astro";
 import "../styles/global.css";
 ---
 
@@ -16,6 +17,7 @@ import "../styles/global.css";
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
+  <NavBar />
 
   <body>
     <slot />
@@ -32,4 +34,5 @@ import "../styles/global.css";
   <script
     src="https://kit.fontawesome.com/36c4f0d6c4.js"
     crossorigin="anonymous"></script>
+
 </html>

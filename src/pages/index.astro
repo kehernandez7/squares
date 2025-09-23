@@ -1,12 +1,24 @@
 ---
+import NavBar from "../components/NavBar.astro";
+import GameButtons from "../components/GameButtons.tsx";
 import Layout from "../layouts/Layout.astro";
-import "../styles/global.css";
 ---
 
-<Layout title="NFL Squares">
-  <section
-    class="flex flex-col items-center justify-center min-h-screen text-center px-4"
-  >
-    <h1 class="text-4xl font-bold mb-4">Welcome to Fantasy Dart</h1>
-  </section>
+<Layout title="Fantasy Dart">
+  <NavBar />
+
+  <main class="flex flex-col items-center text-center mt-12 flex-1 px-4 pt-20">
+    <!-- Intro -->
+    <h1 class="text-4xl font-extrabold mb-4 animate-fade-in">
+      Welcome to Fantasy Dart
+    </h1>
+    <p class="max-w-xl text-lg text-gray-600 mb-12 animate-fade-in-delay">
+      A new way to combine the thrill of fantasy sports with the precision of
+      darts. Pick a game mode and start playing!
+    </p>
+
+    <!-- Choose a Game -->
+    <h2 class="text-2xl font-semibold mb-6 animate-fade-in">Choose a Game</h2>
+    <GameButtons client:load />
+  </main>
 </Layout>
