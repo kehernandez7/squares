@@ -138,11 +138,28 @@ export default function Grid({ gameId }: { gameId: string }) {
 
   // Modal open → lock background
   useEffect(() => {
-    if (showModal || showPasswordModal) {
-      document.body.classList.add("modal-open");
-    } else {
-      document.body.classList.remove("modal-open");
+  if (showModal || showPasswordModal) {
+    const scrollY = window.scrollY;
+    // Lock the body in place without reflow jump
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+  } else {
+    // Restore scroll position
+    const top = document.body.style.top;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    if (top) {
+      window.scrollTo(0, -parseInt(top || '0', 10));
     }
+  }
   }, [showModal, showPasswordModal]);
 
   // 🔒 Password modal blocks everything
@@ -267,7 +284,7 @@ export default function Grid({ gameId }: { gameId: string }) {
     }
   };
 
-  return (
+  return (<>
     <div className="fade-in">
       <h2 className="page-title">
         {game.name && `${game.name} - `}{game.nfl_game}
@@ -376,40 +393,41 @@ export default function Grid({ gameId }: { gameId: string }) {
           </button>
         </div>
       )}
-
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Enter Your Info</h2>
-            <form onSubmit={handleSubmit} className="modal-form">
-              <label>
-                Name:
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </label>
-              <label>
-                Email:
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </label>
-              <div className="modal-actions">
-                <button type="button" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit">Save</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
+
+    {showModal && (
+      <div className="modal-overlay">
+        <div className="modal">
+          <h2>Enter Your Info</h2>
+          <form onSubmit={handleSubmit} className="modal-form">
+            <label>
+              Name:
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Email:
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </label>
+            <div className="modal-actions">
+              <button type="button" onClick={() => setShowModal(false)}>
+                Cancel
+              </button>
+              <button type="submit">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
