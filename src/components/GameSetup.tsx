@@ -78,7 +78,8 @@ export default function GameSetup() {
 
   return (
     
-    <><div className="info-box fade-in-up">
+    <><div className="page-container fade-in-up">
+    <div className="info-box fade-in-up">
       <h3>How NFL Squares Works</h3>
       <p><strong>What Are NFL Squares?</strong><br />
         NFL Squares is a fun game often played during football games. A 10x10 grid is created, giving 100 possible squares. Each square represents one possible score combination for the two teams.</p>
@@ -147,7 +148,7 @@ export default function GameSetup() {
           </label>
 
           {/* Optional Name */}
-          <label>
+          <label className="text-left">
             <input
               type="password"
               value={password}
@@ -163,6 +164,6 @@ export default function GameSetup() {
             {loading ? "Creating..." : "Create Game"}
           </button>
         </form>
-      </div></>
+      </div></div></>
   );
 }

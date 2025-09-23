@@ -7,6 +7,34 @@
   animation: spin 1s linear infinite;
 }
 
+.title {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #f0f0f0;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* centers horizontally */
+  gap: 1.5rem;           /* space between info-box and form */
+  width: 100%;
+  padding: 1rem;
+  margin: auto
+}
+
+.info-box {
+  max-width: 600px;
+  width: 90%;
+  padding: 1.5rem 2rem;
+  background: #1e2a3a;
+  color: #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  flex-direction: column;
+  line-height: 1.6;
+}
+
 .game-setup-container {
   display: flex;
   flex-direction: column;
@@ -15,13 +43,6 @@
   margin: 1rem auto;       /* 👈 centers relative to screen */
   max-width: 600px;        /* match info-box width */
   width: 100%;             /* responsive */
-  padding: 0 1rem;         /* breathing room on mobile */
-}
-
-.title {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  color: #f0f0f0;
 }
 
 .game-setup-form {
@@ -29,9 +50,8 @@
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  width: 100%;
-  max-width: 600px;   /* 👈 keep aligned with info-box */
-  margin: 0 auto;     /* 👈 center inside container */
+  max-width: 600px;
+  width: 90%;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -90,18 +110,6 @@ h1, h2, h3, .grid-label {
   animation-delay: 0.4s;
 }
 
-.info-box {
-  max-width: 600px;
-  width:100%;
-  margin: 1rem auto 0.5rem auto; /* top 1rem, bottom 0.5rem */
-  padding: 1.5rem 2rem;
-  background: #1e2a3a;
-  color: #e0e0e0;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-  line-height: 1.6;
-}
-
 .info-box h3 {
   text-align: center;
   margin-bottom: 1rem;
@@ -113,9 +121,8 @@ h1, h2, h3, .grid-label {
   .game-setup-form {
     padding: 1.2rem;
   }
-
-  .title {
-    font-size: 1.5rem;
+  .info-box {
+    padding: 1rem 1.2rem;
   }
 }
 
