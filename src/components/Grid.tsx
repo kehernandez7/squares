@@ -21,6 +21,7 @@ interface Game {
   nfl_game: string;
   team_1: string;
   team_2: string;
+  password_required?: boolean;
 }
 
 export default function Grid({ gameId }: { gameId: string }) {
@@ -32,61 +33,167 @@ export default function Grid({ gameId }: { gameId: string }) {
   const [numbers, setNumbers] = useState<{ row: number[]; col: number[] } | null>(null);
   const [winners, setWinners] = useState<{ row: number; col: number; quarters: number[] }[]>([]);
 
+  // Password modal state
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState("");
 
   // Form state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
-  // Fetch game + selections from API
+  // 🔒 Check if password required
   useEffect(() => {
-    if (!gameId) return;
-    if (showModal) {
+    const checkPassword = async () => {
+      try {
+        const res = await fetch(`/api/nflsquares/${gameId}/meta`);
+        const json = await res.json();
+
+        if (json.error) {
+          console.error("Meta API Error:", json.error);
+          setGame(null);
+          setLoading(false);
+          return;
+        }
+
+        if (json.password_required) {
+          setShowPasswordModal(true);
+          setLoading(false);
+        } else {
+          fetchData();
+        }
+      } catch (err) {
+        console.error("Error checking password requirement:", err);
+        setLoading(false);
+      }
+    };
+
+    checkPassword();
+  }, [gameId]);
+
+  // Fetch grid data (only after password is verified OR no password required)
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/nflsquares/${gameId}`);
+      const json = await res.json();
+
+      if (json.error) {
+        console.error("API Error:", json.error);
+        setGame(null);
+      } else {
+        setGame(json.game);
+
+        const filledMap: Record<string, string> = {};
+        json.selections.forEach((s: Selection) => {
+          filledMap[`${s.row}-${s.col}`] = s.users.name;
+        });
+        setFilled(filledMap);
+        setWinners(json.winners || []);
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setGame(null);
+    }
+    setLoading(false);
+    fetchNumbers();
+  };
+
+  const fetchNumbers = async () => {
+    try {
+      const res = await fetch(`/api/nflsquares/${gameId}/numbers`);
+      const json = await res.json();
+      if (json.rows) {
+        setNumbers(json.rows);
+      }
+    } catch (err) {
+      console.error("Error fetching numbers:", err);
+    }
+  };
+
+  // 🔑 Handle password submission
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`/api/nflsquares/${gameId}/verify-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      const json = await res.json();
+
+      if (res.ok && json.success) {
+        setShowPasswordModal(false);
+        setAuthError("");
+        fetchData(); // load grid data now
+      } else {
+        setAuthError("Invalid password. Please try again.");
+      }
+    } catch (err) {
+      console.error("Password verification error:", err);
+      setAuthError("Server error. Try again.");
+    }
+  };
+
+  // Modal open → lock background
+  useEffect(() => {
+    if (showModal || showPasswordModal) {
       document.body.classList.add("modal-open");
     } else {
       document.body.classList.remove("modal-open");
     }
+  }, [showModal, showPasswordModal]);
 
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/nflsquares/${gameId}`);
-        const json = await res.json();
+  // 🔒 Password modal blocks everything
+  if (showPasswordModal) {
+    return (
+      <div className="modal-overlay">
+        <div className="modal">
+          <h2>Enter Game Password</h2>
+          <form onSubmit={handlePasswordSubmit} className="modal-form">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
+              required
+            />
+            {authError && <p className="error-text">{authError}</p>}
+            <div className="modal-actions">
+              <button type="submit">Unlock</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
-        if (json.error) {
-          console.error("API Error:", json.error);
-          setGame(null);
-        } else {
-          setGame(json.game);
+  // 🔄 Loading spinner
+  if (loading) {
+    return (
+      <div className="spinner-container">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
 
-          const filledMap: Record<string, string> = {};
-          json.selections.forEach((s: Selection) => {
-            filledMap[`${s.row}-${s.col}`] = s.users.name;
-          });
-          setFilled(filledMap);
-          setWinners(json.winners || []);
-        }
-      } catch (err) {
-        console.error("Fetch error:", err);
-        setGame(null);
-      }
-      setLoading(false);
-      fetchNumbers();
-    };
 
-    const fetchNumbers = async () => {
-      try {
-        const res = await fetch(`/api/nflsquares/${gameId}/numbers`);
-        const json = await res.json();
-        if (json.rows) {
-          setNumbers(json.rows);
-        }
-      } catch (err) {
-        console.error("Error fetching numbers:", err);
-      }
-  };
+  if (!game) {
+    return (
+      <div className="not-found">
+        <h2 className="error-title">Game not found</h2>
+        <p className="error-text">It looks like this game doesn’t exist or may have been deleted.</p>
+        <a href="/nflsquares" className="create-link">
+          Create a New Game
+        </a>
+      </div>
+    );
+  }
 
-    fetchData();
-  }, [gameId]);
+  const rows = game.rows || GRID_SIZE;
+  const cols = game.cols || GRID_SIZE;
+  const allFilled = Object.keys(filled).length >= rows * cols;
 
   const toggleSelect = (key: string) => {
     if (filled[key]) return;
@@ -108,7 +215,6 @@ export default function Grid({ gameId }: { gameId: string }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // send selected squares + user info to API
     try {
       const res = await fetch(`/api/nflsquares/${gameId}`, {
         method: "POST",
@@ -124,13 +230,12 @@ export default function Grid({ gameId }: { gameId: string }) {
       if (data.error) {
         alert("Error saving selections: " + data.error);
       } else {
-        if (res.status == 207) {
+        if (res.status === 207) {
           alert("Some of your selections were not saved. Please retry.");
         }
-        // Optionally, update local filled map so selections are now locked
         const newFilled = { ...filled };
         selected.forEach((k) => {
-          newFilled[k] = data.name; // just mark as filled
+          newFilled[k] = data.name;
         });
         setFilled(newFilled);
         setSelected(new Set());
@@ -143,21 +248,6 @@ export default function Grid({ gameId }: { gameId: string }) {
       window.location.reload();
     }
   };
-
-  if (loading) {
-    return (
-      <div className="spinner-container">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
-
-  if (!game) return <div>Game not found.</div>;
-
-  const rows = game.rows || GRID_SIZE;
-  const cols = game.cols || GRID_SIZE;
-
-  const allFilled = Object.keys(filled).length >= rows * cols;
 
   const handleGenerateNumbers = async () => {
     try {
@@ -191,19 +281,14 @@ export default function Grid({ gameId }: { gameId: string }) {
             gridTemplateRows: `auto auto repeat(${rows}, minmax(48px, 1fr))`,
           }}
         >
-          {/* top-left corner */}
           <div className="grid-corner" />
-
-          {/* team_2 name spanning all cols */}
           <div
             className="grid-label column-label team-label"
             style={{ gridColumn: `3 / span ${cols}`, gridRow: "1" }}
           >
             {game.team_2}
           </div>
-
-          {/* numbers row for team_2 */}
-          <div className="grid-corner" /> {/* spacer under corner */}
+          <div className="grid-corner" />
           <div
             className="grid-label column-label"
             style={{ gridRow: "2", gridColumn: "2" }}
@@ -213,33 +298,27 @@ export default function Grid({ gameId }: { gameId: string }) {
           {Array.from({ length: cols }).map((_, col) => (
             <div
               key={`col-${col}`}
-              className="grid-label column-label"
+              className="grid-label number-label"
               style={{ gridRow: "2", gridColumn: col + 3 }}
             >
               {numbers ? numbers.col[col] : ""}
             </div>
           ))}
-
-          {/* team_1 name spanning all rows */}
           <div
-            className="grid-label row-label team-label"
+            className="grid-label row-label team-label-left"
             style={{ gridRow: `3 / span ${rows}`, gridColumn: "1" }}
           >
             {game.team_1}
           </div>
-
-          {/* numbers col for team_1 */}
           {Array.from({ length: rows }).map((_, row) => (
             <div
               key={`row-${row}-num`}
-              className="grid-label row-label"
+              className="grid-label number-label"
               style={{ gridRow: row + 3, gridColumn: "2" }}
             >
               {numbers ? numbers.row[row] : ""}
             </div>
           ))}
-
-          {/* grid cells */}
           {Array.from({ length: rows }).flatMap((_, row) =>
             Array.from({ length: cols }).map((_, col) => {
               const k = keyFor(row, col);
@@ -248,58 +327,56 @@ export default function Grid({ gameId }: { gameId: string }) {
               const winner = winners.find((w) => w.row === row && w.col === col);
 
               return (
-              <div
-                key={k}
-                className={[
-                  "grid-cell",
-                  isFilled ? "filled" : "clickable",
-                  isSelected ? "selected" : "",
-                  winner ? "winner" : "",
-                ].join(" ")}
-                style={{ gridRow: row + 3, gridColumn: col + 3 }}
-                onClick={() => toggleSelect(k)}
-                onKeyDown={(e) => handleKey(e, k)}
-              >
-                {winner ? (
-                  <span className="cell-text">
-                    {filled[k] || ""}
-                    <br />
-                    🏆Q{winner.quarters.join(",")}
-                  </span>
-                ) : isFilled ? (
-                  <span className="cell-text">{filled[k]}</span>
-                ) : isSelected ? (
-                  <span className="cell-text">✓</span>
-                ) : null}
-              </div>
+                <div
+                  key={k}
+                  className={[
+                    "grid-cell",
+                    isFilled ? "filled" : "clickable",
+                    isSelected ? "selected" : "",
+                    winner ? "winner" : "",
+                  ].join(" ")}
+                  style={{ gridRow: row + 3, gridColumn: col + 3 }}
+                  onClick={() => toggleSelect(k)}
+                  onKeyDown={(e) => handleKey(e, k)}
+                >
+                  {winner ? (
+                    <span className="cell-text">
+                      {filled[k] || ""}
+                      <br />
+                      🏆Q{winner.quarters.join(",")}
+                    </span>
+                  ) : isFilled ? (
+                    <span className="cell-text">{filled[k]}</span>
+                  ) : isSelected ? (
+                    <span className="cell-text">✓</span>
+                  ) : null}
+                </div>
               );
             })
           )}
         </div>
       </div>
 
-
-      {/* Submit Button */}
-      {!allFilled && <div className="form-actions">
-        <button type="button" disabled={allFilled} onClick={() => setShowModal(true)}>
-          Submit
-        </button>
-      </div>
-      }
-      {/* Generate Numbers Button */}
-      {!numbers && (
+      {!allFilled && (
         <div className="form-actions">
           <button
             type="button"
-            onClick={handleGenerateNumbers}
-            disabled={!allFilled}
+            disabled={allFilled || selected.size === 0}
+            onClick={() => setShowModal(true)}
           >
+            Submit
+          </button>
+        </div>
+      )}
+
+      {!numbers && (
+        <div className="form-actions">
+          <button type="button" onClick={handleGenerateNumbers} disabled={!allFilled}>
             Generate Numbers
           </button>
         </div>
       )}
 
-      {/* Modal */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
@@ -314,7 +391,6 @@ export default function Grid({ gameId }: { gameId: string }) {
                   required
                 />
               </label>
-
               <label>
                 Email:
                 <input
@@ -324,7 +400,6 @@ export default function Grid({ gameId }: { gameId: string }) {
                   required
                 />
               </label>
-
               <div className="modal-actions">
                 <button type="button" onClick={() => setShowModal(false)}>
                   Cancel

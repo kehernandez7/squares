@@ -1,11 +1,13 @@
 import type { APIRoute } from "astro";
 import { supabase } from "../../../db/supabase.js";
+import bcrypt from "bcryptjs";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const { nfl_game_id, row_team_id, column_team_id, name } = await request.json();
+    const { nfl_game_id, row_team_id, column_team_id, name, password } =
+      await request.json();
 
     if (!nfl_game_id || !row_team_id || !column_team_id) {
       return new Response(
@@ -14,10 +16,17 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // 1️⃣ Insert into game
+    // 1️⃣ Hash password if provided
+    let passwordHash: string | null = null;
+    if (password && password.trim().length > 0) {
+      const salt = await bcrypt.genSalt(10);
+      passwordHash = await bcrypt.hash(password, salt);
+    }
+
+    // 2️⃣ Insert into game (with passwordHash if provided)
     const { data: game, error: gameError } = await supabase
       .from("game")
-      .insert([{ nfl_game_id, name }])
+      .insert([{ nfl_game_id, name, password_hash: passwordHash }])
       .select("id, game_uuid")
       .single();
 
@@ -28,7 +37,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // 2️⃣ Insert into nfl_squares_teams
+    // 3️⃣ Insert into nfl_squares_teams
     const { error: teamsError } = await supabase
       .from("nfl_squares_teams")
       .insert([
