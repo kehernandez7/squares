@@ -1,0 +1,27 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Page Not Found">
+  <div
+    class="bg-[#0d1b2a] flex items-center justify-center min-h-screen text-center"
+  >
+    <div class="p-6">
+      <h1 class="text-5xl font-extrabold text-white mb-4">
+        Oops! Page Not Found
+      </h1>
+
+      <p class="text-lg text-gray-300 mb-8">
+        Looks like you went 3 and out. <br />
+        Don’t worry, we’ll punt you back to safety!
+      </p>
+
+      <a
+        href="/"
+        class="px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition"
+      >
+        Return Home
+      </a>
+    </div>
+  </div>
+</Layout>
