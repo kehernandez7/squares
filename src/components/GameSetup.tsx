@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./gamesetup.css";
+import { QRCodeSVG } from "qrcode.react";
+import { FiMail, FiMessageCircle, FiCopy } from "react-icons/fi";
 
 export default function GameSetup() {
   const [weeks, setWeeks] = useState<{ number: number; text: string }[]>([]);
@@ -10,6 +12,9 @@ export default function GameSetup() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingGames, setLoadingGames] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdGame, setCreatedGame] = useState<any>(null);
+
 
 
   // Load weeks dynamically
@@ -44,6 +49,15 @@ export default function GameSetup() {
     fetchGames();
     }, [week]);
 
+    useEffect(() => {
+      if (showSuccessModal) {
+        document.body.classList.add("modal-open");
+      } else {
+        document.body.classList.remove("modal-open");
+      }
+    }, [showSuccessModal]);
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -59,14 +73,15 @@ export default function GameSetup() {
           row_team_id: game.rowTeamId,
           column_team_id: game.colTeamId,
           name,
-          password
+          password,
         }),
       });
       const data = await res.json();
       if (data.error) {
         alert("Error: " + data.error);
       } else {
-        window.location.href = `/nflsquares/${data.game.game_uuid}`;
+        setCreatedGame(data.game);   // store game info
+        setShowSuccessModal(true);   // open modal
       }
     } catch (err) {
       console.error(err);
@@ -75,6 +90,7 @@ export default function GameSetup() {
       setLoading(false);
     }
   };
+
 
   return (
     
@@ -164,6 +180,70 @@ export default function GameSetup() {
             {loading ? "Creating..." : "Create Game"}
           </button>
         </form>
-      </div></div></>
+        </div>
+      </div>
+      <div>
+         {showSuccessModal && createdGame && (
+        <div className="modal-backdrop">
+          <div className="modal-box">
+            <h2>Game Created Successfully!</h2>
+            <p>
+              Your game has been created. Details have also been emailed to you.
+            </p>
+
+            <div className="links">
+              <a
+                href={`/nflsquares/${createdGame.game_uuid}`}
+                className="btn primary-btn"
+              >
+                Go to Game
+              </a>
+              <a href="/" className="btn secondary-btn">
+                Return Home
+              </a>
+            </div>
+            <div className="share-section">
+              <h3>Share Your Game</h3>
+              <QRCodeSVG value={`${window.location.origin}/nflsquares/${createdGame.game_uuid}`} size={150} />
+
+              <div className="share-buttons">
+                <button
+                  className="share-btn"
+                  onClick={() =>
+                    window.open(
+                      `mailto:?subject=Join my NFL Squares game&body=Here’s the link: ${window.location.origin}/nflsquares/${createdGame.game_uuid}`
+                    )
+                  }
+                >
+                  <FiMail /> Email
+                </button>
+
+                <button
+                  className="share-btn"
+                  onClick={() =>
+                    window.open(
+                      `sms:?&body=Join my NFL Squares game: ${window.location.origin}/nflsquares/${createdGame.game_uuid}`
+                    )
+                  }
+                >
+                  <FiMessageCircle /> SMS
+                </button>
+
+                <button
+                  className="share-btn"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/nflsquares/${createdGame.game_uuid}`);
+                    alert("Link copied to clipboard!");
+                  }}
+                >
+                  <FiCopy /> Copy Link
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
+      </>
   );
 }
