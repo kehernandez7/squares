@@ -10,12 +10,13 @@
 .game-setup-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start; /* 👈 instead of center */
-  min-height: auto;           /* let it size naturally */
-  margin-top: 1rem;           /* small top spacing */
+  align-items: center;     /* 👈 centers horizontally */
+  justify-content: flex-start;
+  margin: 1rem auto;       /* 👈 centers relative to screen */
+  max-width: 600px;        /* match info-box width */
+  width: 100%;             /* responsive */
+  padding: 0 1rem;         /* breathing room on mobile */
 }
-
 
 .title {
   font-size: 1.8rem;
@@ -24,16 +25,16 @@
 }
 
 .game-setup-form {
-  background: #162447;       /* dark indigo box */
+  background: #162447;
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  max-width: 600px;
-  width:100%;
+  width: 100%;
+  max-width: 600px;   /* 👈 keep aligned with info-box */
+  margin: 0 auto;     /* 👈 center inside container */
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-bottom: 50px;
 }
 
 /* Make select and input match the compact box */
@@ -107,3 +108,14 @@ h1, h2, h3, .grid-label {
   font-size: 1.4rem;
   color: #f5f5f5;
 }
+
+@media (max-width: 640px) {
+  .game-setup-form {
+    padding: 1.2rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+}
+
