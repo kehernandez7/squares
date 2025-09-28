@@ -42,7 +42,6 @@ export default function Grid({ gameId }: { gameId: string }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
-  // 🔒 Check if password required
   useEffect(() => {
     const checkPassword = async () => {
       try {
@@ -71,7 +70,6 @@ export default function Grid({ gameId }: { gameId: string }) {
     checkPassword();
   }, [gameId]);
 
-  // Fetch grid data (only after password is verified OR no password required)
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -111,7 +109,6 @@ export default function Grid({ gameId }: { gameId: string }) {
     }
   };
 
-  // 🔑 Handle password submission
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -136,7 +133,6 @@ export default function Grid({ gameId }: { gameId: string }) {
     }
   };
 
-  // Modal open → lock background
   useEffect(() => {
   if (showModal || showPasswordModal) {
     const scrollY = window.scrollY;
@@ -148,7 +144,6 @@ export default function Grid({ gameId }: { gameId: string }) {
     document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
   } else {
-    // Restore scroll position
     const top = document.body.style.top;
     document.body.style.position = '';
     document.body.style.top = '';
@@ -162,7 +157,6 @@ export default function Grid({ gameId }: { gameId: string }) {
   }
   }, [showModal, showPasswordModal]);
 
-  // 🔒 Password modal blocks everything
   if (showPasswordModal) {
     return (
       <div className="modal-overlay">
@@ -186,7 +180,6 @@ export default function Grid({ gameId }: { gameId: string }) {
     );
   }
 
-  // 🔄 Loading spinner
   if (loading) {
     return (
       <div className="spinner-container">

@@ -49,7 +49,6 @@ export const GET: APIRoute = async ({ params }) => {
     }
   }
 
-  // 3. Fetch NFL game name from ESPN API
   let gameStatus: string | null = null;
   if (game.nfl_game_id) {
     try {
@@ -172,13 +171,13 @@ export const POST: APIRoute = async ({ request, params }) => {
     user = newUser;
   }
 
-  // 1️⃣ Convert selections into row/col objects
+  // Convert selections into row/col objects
   const selections = selected.map((key: string) => {
     const [row, col] = key.split("-").map(Number);
     return { row, col, game_id: game.id };
   });
 
-  // 2️⃣ Check existing squares
+  // Check existing squares
   const { data: existing, error: existingError } = await supabase
     .from("nfl_squares_selections")
     .select("row, col")
@@ -194,12 +193,12 @@ export const POST: APIRoute = async ({ request, params }) => {
 
   const existingKeys = new Set(existing?.map((e) => `${e.row}-${e.col}`));
 
-  // 3️⃣ Filter out already taken
+  // Filter out already taken
   const newSelections = selections
     .filter((s: { row: any; col: any; }) => !existingKeys.has(`${s.row}-${s.col}`))
     .map((s: any) => ({ ...s, user_id: user.id }));
 
-  // 4️⃣ Insert only fresh ones
+  // Insert only fresh ones
   let allInserted = true;
   if (newSelections.length > 0) {
     const { error: insertError } = await supabase
@@ -212,7 +211,7 @@ export const POST: APIRoute = async ({ request, params }) => {
     }
   }
 
-  // 5️⃣ Response
+  // Response
   if (!allInserted || newSelections.length < selections.length) {
     return new Response(JSON.stringify({ success: true, name: user.name, partial: true }), {
       status: 207,
@@ -228,8 +227,6 @@ async function calculateWinner(
   team_2: number,
   gameId: number
 ) {
-  console.log("calculating winners (per quarter)");
-
   if (!nfl_game_id) return null;
 
   // 1. Fetch the row/col number assignments

@@ -6,7 +6,7 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const { nfl_game_id, row_team_id, column_team_id, name, password } =
+    const { nfl_game_id, row_team_id, column_team_id, name, password, email } =
       await request.json();
 
     if (!nfl_game_id || !row_team_id || !column_team_id) {
@@ -55,6 +55,19 @@ export const POST: APIRoute = async ({ request }) => {
         { status: 500 }
       );
     }
+
+    const baseUrl = process.env.SITE_URL || "http://localhost:4321";
+
+     await fetch(`${baseUrl}/api/email/send-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: `${email}`,
+        subject: "Thanks for creating an NFL Squares game!",
+        html: "<p>Thanks for creating an NFL Squares Game! Here is the link to your game:</p>" + 
+        "<a href=" + baseUrl + "/nflsquares/" + game.game_uuid + ">Game Link</a>",
+      }),
+    });
 
     return new Response(JSON.stringify({ success: true, game }), {
       status: 201,

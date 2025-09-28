@@ -10,6 +10,7 @@ export default function GameSetup() {
   const [selectedGameId, setSelectedGameId] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingGames, setLoadingGames] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -74,6 +75,7 @@ export default function GameSetup() {
           column_team_id: game.colTeamId,
           name,
           password,
+          email
         }),
       });
       const data = await res.json();
@@ -153,6 +155,17 @@ export default function GameSetup() {
             )}
           </label>
 
+          {/* Required Email */}
+          <label className="text-left">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="E-mail" />
+              
+          </label>
+
           {/* Optional Name */}
           <label className="text-left">
             <input
@@ -163,13 +176,13 @@ export default function GameSetup() {
               placeholder="Game Name (optional)" />
           </label>
 
-          {/* Optional Name */}
+          {/* Optional Password */}
           <label className="text-left">
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password (optional)" />
+              placeholder="Game Password (optional)" />
           </label>
 
           <button

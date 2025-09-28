@@ -11,8 +11,8 @@ export const GET: APIRoute = async ({ request }) => {
 
     // Choose endpoint
     const endpoint = week
-      ? `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/${season}/types/${type}/weeks/${week}/events`
-      : `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events`;
+      ? `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?limit=1000&seasonType=${type}&year=${season}&week=${week}`
+      : `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard`;
 
     const res = await fetch(endpoint);
     if (!res.ok) {
@@ -20,27 +20,20 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     const json = await res.json();
-    const items = json.items || [];
+    const events = json.events || [];
 
     const results = [];
 
-    for (const item of items) {
-      const eventRes = await fetch(item.$ref);
-      if (!eventRes.ok) continue;
-      const eventJson = await eventRes.json();
+    for (const event of events) {
+      const competition = event.competitions?.[0];
 
-      const competition = eventJson.competitions?.[0];
-      if (!competition?.status?.$ref) continue;
+      if (!competition?.status) continue;
 
-      const statusRes = await fetch(competition.status.$ref);
-      if (!statusRes.ok) continue;
-      const statusJson = await statusRes.json();
-
-      if (statusJson?.type.name === "STATUS_SCHEDULED") {
+      if (competition?.status?.type?.name === "STATUS_SCHEDULED") {
         results.push({
-          id: eventJson.id,
-          name: eventJson.name,
-          shortDetail: eventJson.shortName,
+          id: event.id,
+          name: event.name,
+          shortDetail: event.shortName,
           competitors: competition.competitors?.map((c: any) => c.team?.displayName),
           // placeholders for now — you’ll wire in later
           rowTeamId: competition.competitors?.[0]?.id || null,

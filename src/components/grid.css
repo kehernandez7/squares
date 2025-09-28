@@ -1,24 +1,19 @@
-/* grid.css - plain CSS, no Tailwind needed */
-
 .custom-grid {
   display: grid;
   gap: 8px;
   align-items: start;
   width: 100%;
   box-sizing: border-box;
-  /* max width so cells don't grow huge on wide screens */
   max-width: 1000px;
   background: transparent;
   max-width: 100%;
   box-sizing: border-box;
 }
 
-/* corner (top-left) */
 .grid-corner {
   padding: 6px;
 }
 
-/* labels (top row and left column) */
 .grid-label {
   display: flex;
   align-items: center;
@@ -29,17 +24,15 @@
   user-select: none;
 }
 
-/* row label alignment */
 .row-label {
   justify-content: flex-start;
   padding-left: 8px;
 }
 
-/* cells */
 .grid-cell {
   box-sizing: border-box;
-  border: 1px solid #444; /* darker border */
-  background: #1b263b;    /* dark navy */
+  border: 1px solid #444;
+  background: #1b263b;
   color: #e0e0e0;
   display: flex;
   align-items: center;
@@ -53,21 +46,18 @@
   overflow: hidden;
 }
 
-/* clickable hover */
 .grid-cell.clickable:hover {
-  background: #2e3b55; /* slightly lighter on hover */
+  background: #2e3b55;
   transform: translateY(-3px);
   box-shadow: 0 8px 18px rgba(0,0,0,0.5);
 }
 
-/* filled */
 .grid-cell.filled {
   background: #3a506b;
   color: #ddd;
   cursor: not-allowed;
 }
 
-/* selected */
 .grid-cell.selected {
   background: #4e8cff; 
   color: white;
@@ -75,18 +65,15 @@
   transform: scale(0.98);
 }
 
-/* clickable vs locked */
 .grid-cell.clickable {
   cursor: pointer;
 }
 
-/* cell text style */
 .cell-text {
   font-weight: 300;
   font-size: 14px;
 }
 
-/* responsive: if the container is small, labels can wrap */
 @media (max-width: 480px) {
   .grid-label {
     font-size: 12px;
@@ -126,14 +113,13 @@
   background: #0d4ba8;
 }
 
-/* Modal box */
 .grid-cell.winner .cell-text {
-  white-space: pre-line; /* allow line breaks */
+  white-space: pre-line;
   text-align: center;
 }
 
 .grid-cell.winner {
-  background: #2ecc71 !important; /* bright green */
+  background: #2ecc71 !important;
   color: white;
   font-weight: 800;
   border: 2px solid #27ae60;
@@ -146,7 +132,7 @@
 }
 
 .modal {
-  background: #162447; /* dark indigo */
+  background: #162447;
   color: #e0e0e0;
 }
 
@@ -156,7 +142,7 @@
 }
 
 h1, h2, h3, .grid-label {
-  color: #f0f0f0; /* bright white */
+  color: #f0f0f0;
   text-align: center;
 }
 
@@ -168,7 +154,7 @@ h1, h2, h3, .grid-label {
 
 .spinner {
   border: 6px solid rgba(255, 255, 255, 0.2);
-  border-top: 6px solid #4e8cff; /* blue highlight */
+  border-top: 6px solid #4e8cff;
   border-radius: 50%;
   width: 60px;
   height: 60px;
@@ -176,7 +162,7 @@ h1, h2, h3, .grid-label {
 }
 
 .spinner-container {
-  position: fixed;   /* stays centered in viewport */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -184,7 +170,7 @@ h1, h2, h3, .grid-label {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(13, 27, 42, 0.7); /* optional overlay */
+  background: rgba(13, 27, 42, 0.7);
   z-index: 1000;
 }
 
@@ -202,7 +188,7 @@ h1, h2, h3, .grid-label {
 }
 
 .modal-overlay {
-  position: fixed;   /* full viewport */
+  position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100%;
   height: 100%;
@@ -220,21 +206,16 @@ h1, h2, h3, .grid-label {
   color: #e0e0e0;
   border-radius: 16px;
   box-shadow: 0 12px 32px rgba(0,0,0,0.6);
-
-  /* Smaller sizing */
   width: min(360px, calc(100vw - 32px));
-  max-height: none; /* don’t force tall limit */
+  max-height: none;
   padding: 1.25rem;
   margin: 0;
-
-  /* Make sure the content fits without scrolling */
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin: auto;
 }
 
-/* Title */
 .modal h2 {
   margin-bottom: 1rem;
   font-size: 1.4rem;
@@ -243,7 +224,6 @@ h1, h2, h3, .grid-label {
   color: #f5f5f5;
 }
 
-/* Form inside modal */
 .modal-form {
   display: flex;
   flex-direction: column;
@@ -272,7 +252,6 @@ h1, h2, h3, .grid-label {
   outline: none;
 }
 
-/* Actions row */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -284,7 +263,6 @@ h1, h2, h3, .grid-label {
   flex: 1;
 }
 
-/* Subtle fade-in animation */
 @keyframes modalFadeIn {
   from {
     opacity: 0;
@@ -304,7 +282,7 @@ body.modal-open {
 
 body.modal-open .modal-overlay,
 body.modal-open .modal-overlay * {
-  pointer-events: auto;   /* re-enable clicks inside the modal only */
+  pointer-events: auto;
 }
 
 .page-title {
@@ -314,7 +292,7 @@ body.modal-open .modal-overlay * {
 }
 
 .team-label {
-  font-size: 2.0rem; /* adjust to taste */
+  font-size: 2.0rem;
   font-weight: 700;
   letter-spacing: 1px;
   display: flex;
@@ -324,15 +302,15 @@ body.modal-open .modal-overlay * {
 }
 
 .team-label-left {
-  align-self: stretch;       /* override container's align-items:start */
+  align-self: stretch;
   display: flex;
-  align-items: center;       /* vertical center within its full height */
-  justify-content: center;   /* horizontal center */
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding-left: 0;           /* avoid the left padding from row labels */
+  padding-left: 0;
   writing-mode: vertical-rl;
-  transform: rotate(180deg); /* keeps text upright top-to-bottom */
-  font-size: 2.5rem; /* adjust to taste */
+  transform: rotate(180deg);
+  font-size: 2.5rem;
   font-weight: 700;
   letter-spacing: 1px;
 }
@@ -395,11 +373,11 @@ body.modal-open .modal-overlay * {
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  color: #f87171; /* red accent */
+  color: #f87171;
 }
 
 .error-text {
-  color: #cbd5e1; /* neutral light */
+  color: #cbd5e1;
   margin-bottom: 1.5rem;
 }
 
@@ -421,9 +399,9 @@ body.modal-open .modal-overlay * {
 
 .grid-label.number-label {
   display: flex;
-  align-items: center;      /* vertical center */
-  justify-content: center;  /* horizontal center */
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-weight: bold;
-  height: 100%;             /* ensure it takes the full grid cell height */
+  height: 100%;
 }
